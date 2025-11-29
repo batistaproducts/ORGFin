@@ -39,7 +39,7 @@
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @for (budget of budgets(); track budget.id) {
               @let remaining = budget.total_amount - budget.spent_amount;
-              @let percentage = (budget.spent_amount / budget.total_amount) * 100;
+              @let percentage = (budget.total_amount / (budget.total_amount > 0 ? budget.total_amount : 1)) * 100;
               <div class="bg-white rounded-lg shadow p-5">
                 <div class="flex justify-between items-start">
                   <div>
@@ -87,7 +87,12 @@
                   </div>
                   <div>
                     <p class="font-semibold text-gray-900">{{ transaction.title }}</p>
-                    <p class="text-sm text-gray-500">{{ transaction.place }} &middot; {{ transaction.card?.name }}</p>
+                    <p class="text-sm text-gray-500">
+                      {{ transaction.place }} &middot; {{ transaction.card?.name }}
+                      @if(transaction.user_id !== currentUser()?.id) {
+                        <span class="font-semibold text-primary-700"> ({{ transaction.profiles?.email }})</span>
+                      }
+                    </p>
                   </div>
                 </div>
                 <div>

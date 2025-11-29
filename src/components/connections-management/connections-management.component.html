@@ -1,0 +1,95 @@
+<!-- Antonio Batista - Organizador de gastos - 2024-07-25 -->
+<!-- Interface para gerenciar conexões com outros usuários. -->
+
+<div class="space-y-10">
+  <h1 class="text-3xl font-bold text-gray-800">Gerenciar Conexões</h1>
+
+  <!-- Seção para Adicionar Nova Conexão -->
+  <section class="bg-white p-6 rounded-lg shadow-md">
+    <h2 class="text-xl font-semibold text-gray-700 mb-4">Convidar para Compartilhar</h2>
+    <p class="text-gray-600 mb-4">
+      Adicione o e-mail de outro usuário para compartilhar dashboards, transações e orçamentos.
+    </p>
+    <form [formGroup]="inviteForm" (ngSubmit)="sendInvite()" class="flex flex-col sm:flex-row items-start gap-4">
+      <div class="w-full">
+        <label for="email" class="sr-only">E-mail do usuário</label>
+        <input type="email" id="email" formControlName="email" placeholder="email@exemplo.com" class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+        @if (inviteForm.get('email')?.invalid && inviteForm.get('email')?.touched) {
+          <p class="mt-1 text-sm text-red-600">Por favor, insira um e-mail válido.</p>
+        }
+      </div>
+      <button type="submit" [disabled]="inviteForm.invalid || isSubmitting()" class="w-full sm:w-auto flex justify-center py-2 px-6 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors">
+        @if (isSubmitting()) {
+          <span>Enviando...</span>
+        } @else {
+          <span>Enviar Convite</span>
+        }
+      </button>
+    </form>
+    @if (errorMessage()) {
+      <p class="mt-4 text-sm text-red-600 p-3 bg-red-50 rounded-md">{{ errorMessage() }}</p>
+    }
+    @if (successMessage()) {
+      <p class="mt-4 text-sm text-green-700 p-3 bg-green-50 rounded-md">{{ successMessage() }}</p>
+    }
+  </section>
+
+  <!-- Seção de Solicitações Pendentes -->
+  <section>
+    <h2 class="text-xl font-semibold text-gray-700 mb-4">Solicitações Pendentes</h2>
+    @if (pendingRequests().length > 0) {
+      <div class="bg-white rounded-lg shadow overflow-hidden">
+        <ul class="divide-y divide-gray-200">
+          @for (request of pendingRequests(); track request.id) {
+            <li class="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div class="flex items-center">
+                <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                  <svg class="h-6 w-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                </div>
+                <div class="ml-4">
+                  <div class="text-sm font-medium text-gray-900">{{ request.requester?.email }}</div>
+                  <div class="text-sm text-gray-500">enviou um convite para você.</div>
+                </div>
+              </div>
+              <div class="flex items-center space-x-3 self-end sm:self-center">
+                <button (click)="acceptRequest(request)" class="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-700 rounded-md transition-colors">Aceitar</button>
+                <button (click)="declineRequest(request)" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-md transition-colors">Recusar</button>
+              </div>
+            </li>
+          }
+        </ul>
+      </div>
+    } @else {
+      <div class="bg-white rounded-lg shadow p-8 text-center text-gray-500">
+        <p>Nenhuma solicitação pendente.</p>
+      </div>
+    }
+  </section>
+
+  <!-- Seção de Conexões Ativas -->
+  <section>
+    <h2 class="text-xl font-semibold text-gray-700 mb-4">Minhas Conexões</h2>
+     @if (acceptedConnections().length > 0) {
+      <div class="bg-white rounded-lg shadow overflow-hidden">
+        <ul class="divide-y divide-gray-200">
+          @for (connection of acceptedConnections(); track connection.id) {
+            @let connectedUser = connection.requester_id === currentUser()?.id ? connection.addressee : connection.requester;
+            <li class="p-4 flex items-center">
+              <div class="flex-shrink-0 h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+              </div>
+              <div class="ml-4">
+                <div class="text-sm font-medium text-gray-900">{{ connectedUser?.email }}</div>
+                <div class="text-sm text-green-600">Conexão ativa</div>
+              </div>
+            </li>
+          }
+        </ul>
+      </div>
+    } @else {
+      <div class="bg-white rounded-lg shadow p-8 text-center text-gray-500">
+        <p>Você ainda não tem nenhuma conexão ativa.</p>
+      </div>
+    }
+  </section>
+</div>

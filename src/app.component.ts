@@ -9,8 +9,9 @@ import { CardManagementComponent } from './components/card-management/card-manag
 import { AuthService } from './services/auth.service';
 import { ExpenseService } from './services/expense.service';
 import { AuthComponent } from './components/auth/auth.component';
+import { ConnectionsManagementComponent } from './components/connections-management/connections-management.component';
 
-type View = 'dashboard' | 'add-transaction' | 'manage-cards' | 'add-budget';
+type View = 'dashboard' | 'add-transaction' | 'manage-cards' | 'connections-management';
 
 @Component({
   selector: 'app-root',
@@ -22,7 +23,8 @@ type View = 'dashboard' | 'add-transaction' | 'manage-cards' | 'add-budget';
     DashboardComponent,
     AddTransactionFormComponent,
     CardManagementComponent,
-    AuthComponent
+    AuthComponent,
+    ConnectionsManagementComponent,
   ]
 })
 export class AppComponent {

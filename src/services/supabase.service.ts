@@ -7,6 +7,7 @@ import { Card } from '../models/card.model';
 import { Transaction } from '../models/transaction.model';
 import { Budget } from '../models/budget.model';
 import { environment } from '../environments/environment';
+import { Connection } from '../models/connection.model';
 
 @Injectable({
   providedIn: 'root'
@@ -32,6 +33,8 @@ export class SupabaseService {
   // --- Métodos para Cartões ---
 
   async getCards(): Promise<Card[]> {
+    // Antonio Batista - Organizador de gastos - 2024-07-25
+    // A política RLS garante que apenas os cartões do usuário logado e de seus conectados sejam retornados.
     const { data, error } = await this.supabase.from('cards').select('*');
     if (error) {
       console.error('Erro ao buscar cartões:', error.message);
@@ -41,8 +44,6 @@ export class SupabaseService {
   }
 
   async addCard(card: Omit<Card, 'id'>): Promise<Card | null> {
-    // Antonio Batista - Organizador de gastos - 2024-07-25
-    // O user_id é adicionado automaticamente pelo banco de dados (default auth.uid()).
     const { data, error } = await this.supabase.from('cards').insert([card]).select();
     if (error) {
       console.error('Erro ao adicionar cartão:', error.message);
@@ -54,7 +55,9 @@ export class SupabaseService {
   // --- Métodos para Transações ---
 
   async getTransactions(): Promise<Transaction[]> {
-    const { data, error } = await this.supabase.from('transactions').select('*');
+    // Antonio Batista - Organizador de gastos - 2024-07-25
+    // A RLS filtra os dados. A junção com 'profiles' traz o e-mail do autor.
+    const { data, error } = await this.supabase.from('transactions').select('*, profiles(email)');
     if (error) {
       console.error('Erro ao buscar transações:', error.message);
       throw error;
@@ -62,9 +65,7 @@ export class SupabaseService {
     return data || [];
   }
 
-  async addTransaction(transaction: Omit<Transaction, 'id' | 'card'>): Promise<Transaction | null> {
-    // Antonio Batista - Organizador de gastos - 2024-07-25
-    // O user_id é adicionado automaticamente pelo banco de dados (default auth.uid()).
+  async addTransaction(transaction: Omit<Transaction, 'id' | 'card' | 'user_id' | 'profiles'>): Promise<Transaction | null> {
     const { data, error } = await this.supabase.from('transactions').insert([transaction]).select();
      if (error) {
       console.error('Erro ao adicionar transação:', error.message);
@@ -83,11 +84,47 @@ export class SupabaseService {
     }
     return data || [];
   }
-}
 
-// Antonio Batista - Organizador de gastos - 2024-07-25
-// NOTA: Para este código funcionar, você precisará criar as tabelas
-// correspondentes ('cards', 'transactions', 'budgets') no seu painel do Supabase
-// com as colunas alinhadas aos modelos de dados (Card, Transaction, Budget).
-// Lembre-se de configurar as políticas de RLS (Row Level Security) para
-// garantir que os usuários só possam ver e editar seus próprios dados.
+  // --- Métodos para Conexões ---
+
+  async getConnections(): Promise<Connection[]> {
+      // Antonio Batista - Organizador de gastos - 2024-07-25
+      // Busca todas as conexões (pendentes, aceitas) onde o usuário é o solicitante ou o destinatário.
+      const { data, error } = await this.supabase
+        .from('user_connections')
+        .select('*, requester:profiles!requester_id(email), addressee:profiles!addressee_id(email)');
+      
+      if (error) {
+          console.error('Erro ao buscar conexões:', error.message);
+          throw error;
+      }
+      return data || [];
+  }
+  
+  async sendInvite(email: string): Promise<string> {
+      const { data, error } = await this.supabase.rpc('send_connection_invite', {
+          addressee_email: email
+      });
+
+      if (error) {
+          console.error('Erro ao enviar convite:', error.message);
+          throw error;
+      }
+      return data;
+  }
+
+  async respondToRequest(id: string, status: 'accepted' | 'declined'): Promise<Connection | null> {
+      const { data, error } = await this.supabase
+          .from('user_connections')
+          .update({ status: status, updated_at: new Date().toISOString() })
+          .eq('id', id)
+          .select()
+          .single();
+
+      if (error) {
+          console.error('Erro ao responder ao convite:', error.message);
+          throw error;
+      }
+      return data;
+  }
+}

@@ -4,6 +4,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ExpenseService } from '../../services/expense.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -14,12 +15,14 @@ import { ExpenseService } from '../../services/expense.service';
 })
 export class DashboardComponent {
   expenseService = inject(ExpenseService);
+  authService = inject(AuthService);
 
   // Antonio Batista - Organizador de gastos - 2024-07-25
   // Obtém os dados e o status do serviço usando sinais.
   transactions = this.expenseService.transactionsWithCardDetails;
   budgets = this.expenseService.budgets;
   status = this.expenseService.status;
+  currentUser = this.authService.currentUser;
   
   // Antonio Batista - Organizador de gastos - 2024-07-25
   // Calcula o total gasto no mês atual.

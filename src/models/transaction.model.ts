@@ -12,4 +12,6 @@ export interface Transaction {
   card_id: string;
   card?: Card; // Opcional, para incluir detalhes do cartão
   type: 'credit' | 'debit';
+  user_id: string;
+  profiles?: { email: string | null }; // Para identificar o autor da transação em contas vinculadas
 }
