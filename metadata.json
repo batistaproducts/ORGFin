@@ -1,0 +1,5 @@
+{
+  "name": "Organizador de Gastos",
+  "description": "Um aplicativo para ajudar os usuários a entenderem e organizarem seus gastos com cartões, com dashboards detalhados e metas de orçamento.",
+  "requestFramePermissions": []
+}

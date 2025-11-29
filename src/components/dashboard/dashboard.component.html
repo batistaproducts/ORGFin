@@ -1,0 +1,110 @@
+<!-- Antonio Batista - Organizador de gastos - 2024-07-25 -->
+<!-- Estrutura visual do Dashboard, organizada em seções de resumo, orçamentos e transações. -->
+
+@switch (status()) {
+  @case ('idle') {
+    <div class="text-center p-8">
+      <h1 class="text-2xl font-bold text-gray-700">Bem-vindo!</h1>
+      <p class="text-gray-500">Carregando seus dados...</p>
+    </div>
+  }
+  @case ('loading') {
+    <div class="flex justify-center items-center h-64">
+      <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-primary"></div>
+    </div>
+  }
+  @case ('error') {
+    <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-lg" role="alert">
+      <p class="font-bold">Erro!</p>
+      <p>Não foi possível carregar os dados. Tente novamente mais tarde.</p>
+    </div>
+  }
+  @case ('loaded') {
+    <div class="space-y-8">
+      <!-- Seção de Resumo -->
+      <section>
+        <h1 class="text-2xl font-bold text-gray-800 mb-4">Dashboard Mensal</h1>
+        <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-secondary">
+          <h2 class="text-lg font-semibold text-gray-600">Total de Gastos em Julho</h2>
+          <p class="text-4xl font-bold text-gray-900 mt-2">
+            {{ totalSpentThisMonth() | currency:'BRL':'symbol':'1.2-2' }}
+          </p>
+        </div>
+      </section>
+
+      <!-- Seção de Saldos Disponíveis (Orçamentos) -->
+      <section>
+        <h2 class="text-xl font-bold text-gray-800 mb-4">Saldos Disponíveis</h2>
+        @if(budgets().length > 0) {
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            @for (budget of budgets(); track budget.id) {
+              @let remaining = budget.total_amount - budget.spent_amount;
+              @let percentage = (budget.spent_amount / budget.total_amount) * 100;
+              <div class="bg-white rounded-lg shadow p-5">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <h3 class="font-semibold text-gray-700">{{ budget.name }}</h3>
+                    <p class="text-2xl font-bold text-primary">{{ remaining | currency:'BRL' }}</p>
+                    <p class="text-sm text-gray-500">
+                      Restante de {{ budget.total_amount | currency:'BRL' }}
+                    </p>
+                  </div>
+                  <div class="text-sm font-semibold" [class.text-green-600]="remaining > 0" [class.text-red-600]="remaining <= 0">
+                    {{ remaining > 0 ? 'Disponível' : 'Excedido' }}
+                  </div>
+                </div>
+                <div class="mt-4">
+                  <div class="bg-gray-200 rounded-full h-2.5">
+                    <div class="bg-primary h-2.5 rounded-full" [style.width.%]="percentage"></div>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="bg-white rounded-lg shadow p-8 text-center text-gray-500">
+             <p>Nenhum orçamento cadastrado ainda.</p>
+          </div>
+        }
+      </section>
+
+      <!-- Seção de Transações Recentes -->
+      <section>
+        <h2 class="text-xl font-bold text-gray-800 mb-4">Transações Recentes</h2>
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+          <ul class="divide-y divide-gray-200">
+            @for (transaction of transactions(); track transaction.id) {
+              <li class="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                <div class="flex items-center">
+                  <div class="p-3 rounded-full mr-4" [class.bg-blue-100]="transaction.type === 'credit'" [class.bg-green-100]="transaction.type === 'debit'">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" [class.text-blue-600]="transaction.type === 'credit'" [class.text-green-600]="transaction.type === 'debit'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      @if (transaction.type === 'credit') {
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                      } @else {
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                      }
+                    </svg>
+                  </div>
+                  <div>
+                    <p class="font-semibold text-gray-900">{{ transaction.title }}</p>
+                    <p class="text-sm text-gray-500">{{ transaction.place }} &middot; {{ transaction.card?.name }}</p>
+                  </div>
+                </div>
+                <div>
+                  <p class="font-bold text-right" [class.text-red-500]="transaction.type === 'credit'" [class.text-gray-800]="transaction.type === 'debit'">
+                    {{ (transaction.type === 'credit' ? '-' : '') + (transaction.amount | currency:'BRL':'symbol':'1.2-2') }}
+                  </p>
+                  <p class="text-sm text-gray-500 text-right">{{ transaction.date | date:'dd/MM/yyyy' }}</p>
+                </div>
+              </li>
+            } @empty {
+              <li class="p-6 text-center text-gray-500">
+                Nenhuma transação encontrada.
+              </li>
+            }
+          </ul>
+        </div>
+      </section>
+    </div>
+  }
+}

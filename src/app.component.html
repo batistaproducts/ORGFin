@@ -1,0 +1,74 @@
+<!-- Antonio Batista - Organizador de gastos - 2024-07-25 -->
+<!-- Template principal da aplicação com navegação e área de conteúdo dinâmico. -->
+
+@if (currentUser()) {
+  <div class="min-h-screen bg-gray-100 text-gray-800">
+    <header class="bg-primary shadow-md">
+      <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+          <div class="flex items-center">
+            <svg class="h-8 w-8 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+            </svg>
+            <span class="text-white font-bold text-xl ml-2">Organizador de Gastos</span>
+          </div>
+          <div class="hidden md:flex items-center">
+            <div class="ml-10 flex items-baseline space-x-4">
+              <button (click)="changeView('dashboard')" [class.bg-primary-700]="currentView() === 'dashboard'" class="text-white hover:bg-primary-700 px-3 py-2 rounded-md text-sm font-medium transition-colors">Dashboard</button>
+              <button (click)="changeView('add-transaction')" [class.bg-primary-700]="currentView() === 'add-transaction'" class="text-white hover:bg-primary-700 px-3 py-2 rounded-md text-sm font-medium transition-colors">Nova Transação</button>
+              <button (click)="changeView('manage-cards')" [class.bg-primary-700]="currentView() === 'manage-cards'" class="text-white hover:bg-primary-700 px-3 py-2 rounded-md text-sm font-medium transition-colors">Meus Cartões</button>
+            </div>
+          </div>
+           <div class="hidden md:flex items-center ml-4">
+            <span class="text-white text-sm mr-4">{{ currentUser()?.email }}</span>
+            <button (click)="logout()" title="Sair" class="p-2 rounded-full text-white hover:bg-primary-700 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24 md:pb-8">
+      @switch (currentView()) {
+        @case ('dashboard') {
+          <app-dashboard />
+        }
+        @case ('add-transaction') {
+          <app-add-transaction-form (transactionAdded)="changeView('dashboard')" />
+        }
+        @case ('manage-cards') {
+          <app-card-management />
+        }
+      }
+    </main>
+    
+    <!-- Navegação Mobile Fixa na Base -->
+    <div class="md:hidden fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t border-gray-200">
+      <div class="flex justify-around">
+        <button (click)="changeView('dashboard')" class="flex flex-col items-center justify-center w-full pt-2 pb-1" [class.text-primary]="currentView() === 'dashboard'" [class.text-gray-500]="currentView() !== 'dashboard'">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+          <span class="text-xs">Dashboard</span>
+        </button>
+        <button (click)="changeView('add-transaction')" class="flex flex-col items-center justify-center w-full pt-2 pb-1" [class.text-primary]="currentView() === 'add-transaction'" [class.text-gray-500]="currentView() !== 'add-transaction'">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          <span class="text-xs">Adicionar</span>
+        </button>
+        <button (click)="changeView('manage-cards')" class="flex flex-col items-center justify-center w-full pt-2 pb-1" [class.text-primary]="currentView() === 'manage-cards'" [class.text-gray-500]="currentView() !== 'manage-cards'">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+          <span class="text-xs">Cartões</span>
+        </button>
+         <button (click)="logout()" class="flex flex-col items-center justify-center w-full pt-2 pb-1 text-gray-500">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+          <span class="text-xs">Sair</span>
+        </button>
+      </div>
+    </div>
+  </div>
+} @else {
+  <app-auth />
+}

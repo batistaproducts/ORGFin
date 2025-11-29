@@ -1,0 +1,79 @@
+<!-- Antonio Batista - Organizador de gastos - 2024-07-25 -->
+<!-- Estrutura do formulário para adicionar nova transação, com feedback visual para o usuário. -->
+
+<div class="max-w-2xl mx-auto">
+  <div class="bg-white rounded-lg shadow-lg p-6 md:p-8">
+    <h1 class="text-2xl font-bold text-gray-800 mb-6">Registrar Nova Compra</h1>
+    <form [formGroup]="transactionForm" (ngSubmit)="onSubmit()" class="space-y-6">
+      <!-- Título da Compra -->
+      <div>
+        <label for="title" class="block text-sm font-medium text-gray-700">Título da Compra</label>
+        <input type="text" id="title" formControlName="title" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm">
+        @if (transactionForm.get('title')?.invalid && transactionForm.get('title')?.touched) {
+          <p class="mt-1 text-sm text-red-600">Título é obrigatório.</p>
+        }
+      </div>
+
+      <!-- Lugar da Compra -->
+      <div>
+        <label for="place" class="block text-sm font-medium text-gray-700">Lugar</label>
+        <input type="text" id="place" formControlName="place" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm">
+        @if (transactionForm.get('place')?.invalid && transactionForm.get('place')?.touched) {
+          <p class="mt-1 text-sm text-red-600">Lugar é obrigatório.</p>
+        }
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Valor -->
+        <div>
+          <label for="amount" class="block text-sm font-medium text-gray-700">Valor (R$)</label>
+          <input type="number" id="amount" formControlName="amount" placeholder="0.00" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm">
+          @if (transactionForm.get('amount')?.invalid && transactionForm.get('amount')?.touched) {
+            <p class="mt-1 text-sm text-red-600">Valor inválido.</p>
+          }
+        </div>
+
+        <!-- Data -->
+        <div>
+          <label for="date" class="block text-sm font-medium text-gray-700">Data</label>
+          <input type="date" id="date" formControlName="date" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm">
+        </div>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Cartão -->
+        <div>
+          <label for="card" class="block text-sm font-medium text-gray-700">Cartão</label>
+          <select id="card" formControlName="card_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md">
+            <option value="" disabled>Selecione um cartão</option>
+            @for (card of cards(); track card.id) {
+              <option [value]="card.id">{{ card.name }} ({{ card.bank }})</option>
+            }
+          </select>
+          @if (transactionForm.get('card_id')?.invalid && transactionForm.get('card_id')?.touched) {
+            <p class="mt-1 text-sm text-red-600">Selecione um cartão.</p>
+          }
+        </div>
+
+        <!-- Tipo de Transação -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Tipo de Transação</label>
+          <div class="mt-2 flex rounded-md shadow-sm">
+            <button type="button" (click)="transactionForm.get('type')?.setValue('credit')" [class.bg-primary]="transactionForm.get('type')?.value === 'credit'" [class.text-white]="transactionForm.get('type')?.value === 'credit'" [class.bg-white]="transactionForm.get('type')?.value !== 'credit'" class="px-4 py-2 rounded-l-md border border-gray-300 text-sm font-medium flex-1 text-center hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary">Crédito</button>
+            <button type="button" (click)="transactionForm.get('type')?.setValue('debit')" [class.bg-primary]="transactionForm.get('type')?.value === 'debit'" [class.text-white]="transactionForm.get('type')?.value === 'debit'" [class.bg-white]="transactionForm.get('type')?.value !== 'debit'" class="-ml-px px-4 py-2 rounded-r-md border border-gray-300 text-sm font-medium flex-1 text-center hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary">Débito</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-4">
+        <button type="submit" [disabled]="transactionForm.invalid || isSubmitting()" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors">
+          @if (isSubmitting()) {
+            <span>Salvando...</span>
+          } @else {
+            <span>Adicionar Transação</span>
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
