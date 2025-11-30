@@ -19,7 +19,7 @@ export class DashboardComponent {
 
   // Antonio Batista - Organizador de gastos - 2024-07-25
   // Obtém os dados e o status do serviço usando sinais.
-  transactions = this.expenseService.transactionsWithCardDetails;
+  transactions = this.expenseService.transactionsWithDetails;
   budgets = this.expenseService.budgets;
   status = this.expenseService.status;
   currentUser = this.authService.currentUser;

@@ -17,6 +17,7 @@
               <button (click)="changeView('dashboard')" [class.bg-primary-700]="currentView() === 'dashboard'" class="text-white hover:bg-primary-700 px-3 py-2 rounded-md text-sm font-medium transition-colors">Dashboard</button>
               <button (click)="changeView('add-transaction')" [class.bg-primary-700]="currentView() === 'add-transaction'" class="text-white hover:bg-primary-700 px-3 py-2 rounded-md text-sm font-medium transition-colors">Nova Transação</button>
               <button (click)="changeView('manage-cards')" [class.bg-primary-700]="currentView() === 'manage-cards'" class="text-white hover:bg-primary-700 px-3 py-2 rounded-md text-sm font-medium transition-colors">Meus Cartões</button>
+              <button (click)="changeView('manage-budgets')" [class.bg-primary-700]="currentView() === 'manage-budgets'" class="text-white hover:bg-primary-700 px-3 py-2 rounded-md text-sm font-medium transition-colors">Saldos</button>
               <button (click)="changeView('connections-management')" [class.bg-primary-700]="currentView() === 'connections-management'" class="text-white hover:bg-primary-700 px-3 py-2 rounded-md text-sm font-medium transition-colors">Conexões</button>
             </div>
           </div>
@@ -43,6 +44,9 @@
         @case ('manage-cards') {
           <app-card-management />
         }
+        @case ('manage-budgets') {
+          <app-budget-management />
+        }
         @case ('connections-management') {
             <app-connections-management />
         }
@@ -63,6 +67,10 @@
         <button (click)="changeView('manage-cards')" class="flex flex-col items-center justify-center w-full pt-2 pb-1" [class.text-primary]="currentView() === 'manage-cards'" [class.text-gray-500]="currentView() !== 'manage-cards'">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
           <span class="text-xs">Cartões</span>
+        </button>
+        <button (click)="changeView('manage-budgets')" class="flex flex-col items-center justify-center w-full pt-2 pb-1" [class.text-primary]="currentView() === 'manage-budgets'" [class.text-gray-500]="currentView() !== 'manage-budgets'">
+           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+          <span class="text-xs">Saldos</span>
         </button>
         <button (click)="changeView('connections-management')" class="flex flex-col items-center justify-center w-full pt-2 pb-1" [class.text-primary]="currentView() === 'connections-management'" [class.text-gray-500]="currentView() !== 'connections-management'">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M15 21v-1a6 6 0 00-1-3.794a4 4 0 00-6.471-3.064M12 4.354V1M12 4.354a4 4 0 000 5.292M12 10.646a4 4 0 010 5.292m0 0v4.708m0-4.708a4 4 0 000 5.292m-4.354 2.122a4 4 0 015.292 0m-5.292 0a4 4 0 005.292 0"></path></svg>

@@ -1,0 +1,77 @@
+<!-- Antonio Batista - Organizador de gastos - 2024-07-25 -->
+<!-- Interface para listar os saldos disponíveis e adicionar novos. -->
+
+<div class="space-y-8">
+  <div class="flex justify-between items-center">
+    <h1 class="text-2xl font-bold text-gray-800">Meus Saldos</h1>
+    <button (click)="toggleAddForm()" class="flex items-center justify-center bg-primary text-white font-bold py-2 px-4 rounded-lg shadow hover:bg-primary-700 transition-colors">
+      <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+      Novo Saldo
+    </button>
+  </div>
+
+  <!-- Formulário de Adição (Condicional) -->
+  @if(showAddForm()) {
+    <div class="bg-white rounded-lg shadow-lg p-6 md:p-8 animate-fade-in">
+      <h2 class="text-xl font-bold text-gray-800 mb-6">Adicionar Novo Saldo</h2>
+      <form [formGroup]="budgetForm" (ngSubmit)="onSubmit()" class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label for="budgetName" class="block text-sm font-medium text-gray-700">Nome do Saldo (Ex: Alimentação)</label>
+            <input type="text" id="budgetName" formControlName="name" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+            @if(budgetForm.get('name')?.invalid && budgetForm.get('name')?.touched) { <p class="text-sm text-red-600 mt-1">O nome é obrigatório.</p> }
+          </div>
+          <div>
+            <label for="total_amount" class="block text-sm font-medium text-gray-700">Valor Total (R$)</label>
+            <input type="number" id="total_amount" formControlName="total_amount" placeholder="300.00" step="0.01" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+            @if(budgetForm.get('total_amount')?.invalid && budgetForm.get('total_amount')?.touched) { <p class="text-sm text-red-600 mt-1">O valor é obrigatório.</p> }
+          </div>
+        </div>
+        <div class="flex justify-end space-x-4 pt-4">
+          <button type="button" (click)="toggleAddForm()" class="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Cancelar</button>
+          <button type="submit" [disabled]="budgetForm.invalid || isSubmitting()" class="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-700 disabled:bg-gray-400 disabled:cursor-not-allowed">
+            @if(isSubmitting()) {
+              <span>Salvando...</span>
+            } @else {
+              <span>Salvar Saldo</span>
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+
+  <!-- Lista de Saldos -->
+   <div class="space-y-6">
+    @for (budget of budgets(); track budget.id) {
+        @let remaining = budget.total_amount - budget.spent_amount;
+        @let percentage = (budget.spent_amount / (budget.total_amount > 0 ? budget.total_amount : 1)) * 100;
+        <div class="bg-white rounded-lg shadow p-5">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+            <h3 class="font-semibold text-gray-800 text-lg md:col-span-1">{{ budget.name }}</h3>
+            <div class="md:col-span-2">
+            <div class="flex justify-between items-center mb-1">
+                <p class="text-sm font-medium text-primary">
+                {{ remaining | currency:'BRL' }}
+                <span class="text-gray-500"> / {{ budget.total_amount | currency:'BRL' }}</span>
+                </p>
+                <p class="text-sm font-semibold" [class.text-green-600]="remaining >= 0" [class.text-red-600]="remaining < 0">
+                {{ remaining >= 0 ? 'Disponível' : 'Excedido' }}
+                </p>
+            </div>
+            <div class="bg-gray-200 rounded-full h-4">
+                <div class="bg-primary h-4 rounded-full text-center text-white text-xs flex items-center justify-center" [style.width.%]="percentage">
+                    {{ percentage | number:'1.0-0' }}%
+                </div>
+            </div>
+            </div>
+        </div>
+        </div>
+    } @empty {
+      <div class="col-span-full bg-white rounded-lg shadow p-8 text-center text-gray-500">
+        <p>Nenhum saldo cadastrado ainda.</p>
+        <p class="mt-2 text-sm">Clique em "Novo Saldo" para começar a organizar suas metas de gastos.</p>
+      </div>
+    }
+  </div>
+</div>

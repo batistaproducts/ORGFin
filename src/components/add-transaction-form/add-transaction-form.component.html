@@ -27,7 +27,7 @@
         <!-- Valor -->
         <div>
           <label for="amount" class="block text-sm font-medium text-gray-700">Valor (R$)</label>
-          <input type="number" id="amount" formControlName="amount" placeholder="0.00" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm">
+          <input type="number" id="amount" formControlName="amount" placeholder="0.00" step="0.01" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm">
           @if (transactionForm.get('amount')?.invalid && transactionForm.get('amount')?.touched) {
             <p class="mt-1 text-sm text-red-600">Valor inválido.</p>
           }
@@ -40,29 +40,26 @@
         </div>
       </div>
       
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- Cartão -->
-        <div>
-          <label for="card" class="block text-sm font-medium text-gray-700">Cartão</label>
-          <select id="card" formControlName="card_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md">
-            <option value="" disabled>Selecione um cartão</option>
+      <!-- Forma de Pagamento -->
+      <div>
+        <label for="paymentMethod" class="block text-sm font-medium text-gray-700">Forma de Pagamento</label>
+        <select id="paymentMethod" formControlName="paymentMethod" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md">
+          <option value="" disabled>Selecione uma opção</option>
+          <optgroup label="Cartões de Crédito">
             @for (card of cards(); track card.id) {
-              <option [value]="card.id">{{ card.name }} ({{ card.bank }})</option>
+              <option [value]="'card-' + card.id">{{ card.name }} ({{ card.bank }})</option>
             }
-          </select>
-          @if (transactionForm.get('card_id')?.invalid && transactionForm.get('card_id')?.touched) {
-            <p class="mt-1 text-sm text-red-600">Selecione um cartão.</p>
-          }
-        </div>
-
-        <!-- Tipo de Transação -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Tipo de Transação</label>
-          <div class="mt-2 flex rounded-md shadow-sm">
-            <button type="button" (click)="transactionForm.get('type')?.setValue('credit')" [class.bg-primary]="transactionForm.get('type')?.value === 'credit'" [class.text-white]="transactionForm.get('type')?.value === 'credit'" [class.bg-white]="transactionForm.get('type')?.value !== 'credit'" class="px-4 py-2 rounded-l-md border border-gray-300 text-sm font-medium flex-1 text-center hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary">Crédito</button>
-            <button type="button" (click)="transactionForm.get('type')?.setValue('debit')" [class.bg-primary]="transactionForm.get('type')?.value === 'debit'" [class.text-white]="transactionForm.get('type')?.value === 'debit'" [class.bg-white]="transactionForm.get('type')?.value !== 'debit'" class="-ml-px px-4 py-2 rounded-r-md border border-gray-300 text-sm font-medium flex-1 text-center hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary">Débito</button>
-          </div>
-        </div>
+          </optgroup>
+          <optgroup label="Saldos Disponíveis">
+            @for (budget of budgets(); track budget.id) {
+               @let remaining = budget.total_amount - budget.spent_amount;
+              <option [value]="'budget-' + budget.id">{{ budget.name }} (Restante: {{ remaining | currency:'BRL' }})</option>
+            }
+          </optgroup>
+        </select>
+        @if (transactionForm.get('paymentMethod')?.invalid && transactionForm.get('paymentMethod')?.touched) {
+          <p class="mt-1 text-sm text-red-600">Selecione uma forma de pagamento.</p>
+        }
       </div>
 
       <div class="pt-4">

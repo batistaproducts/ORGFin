@@ -23,6 +23,7 @@ export class AddTransactionFormComponent {
   transactionAdded = output<void>();
 
   cards = this.expenseService.cards;
+  budgets = this.expenseService.budgets;
   isSubmitting = signal(false);
 
   // Antonio Batista - Organizador de gastos - 2024-07-25
@@ -32,8 +33,7 @@ export class AddTransactionFormComponent {
     place: ['', Validators.required],
     amount: [null as number | null, [Validators.required, Validators.min(0.01)]],
     date: [new Date().toISOString().substring(0, 10), Validators.required],
-    card_id: ['', Validators.required],
-    type: ['credit' as 'credit' | 'debit', Validators.required],
+    paymentMethod: ['', Validators.required], // Unifica cartão e saldo
   });
 
   // Antonio Batista - Organizador de gastos - 2024-07-25
@@ -47,11 +47,29 @@ export class AddTransactionFormComponent {
     this.isSubmitting.set(true);
     try {
       const formValue = this.transactionForm.getRawValue();
-      await this.expenseService.addTransaction(formValue as Omit<Transaction, 'id' | 'card'>);
+
+      // Antonio Batista - Organizador de gastos - 2024-07-25
+      // CORREÇÃO: Divide a string do método de pagamento e reconstrói o UUID corretamente.
+      // O UUID contém hifens, então `split('-')` o quebra. Precisamos pegar a primeira parte
+      // como o tipo e juntar o resto para formar o ID completo.
+      const paymentMethodParts = formValue.paymentMethod!.split('-');
+      const type = paymentMethodParts[0];
+      const id = paymentMethodParts.slice(1).join('-');
+
+      const transactionData: Partial<Transaction> = {
+          title: formValue.title,
+          place: formValue.place,
+          amount: formValue.amount,
+          date: formValue.date,
+          card_id: type === 'card' ? id : null,
+          budget_id: type === 'budget' ? id : null,
+          type: type === 'card' ? 'credit' : 'debit'
+      };
+      
+      await this.expenseService.addTransaction(transactionData);
       this.transactionAdded.emit();
       this.transactionForm.reset({
         date: new Date().toISOString().substring(0, 10),
-        type: 'credit'
       });
     } catch (error) {
         console.error("Erro ao adicionar transação:", error);

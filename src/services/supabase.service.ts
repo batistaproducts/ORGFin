@@ -56,8 +56,8 @@ export class SupabaseService {
 
   async getTransactions(): Promise<Transaction[]> {
     // Antonio Batista - Organizador de gastos - 2024-07-25
-    // A RLS filtra os dados. A junção com 'profiles' traz o e-mail do autor.
-    const { data, error } = await this.supabase.from('transactions').select('*, profiles(email)');
+    // A RLS filtra os dados. A junção com 'profiles', 'cards' e 'budgets' traz os detalhes.
+    const { data, error } = await this.supabase.from('transactions').select('*, profiles(email), card:cards(*), budget:budgets(*)');
     if (error) {
       console.error('Erro ao buscar transações:', error.message);
       throw error;
@@ -65,7 +65,7 @@ export class SupabaseService {
     return data || [];
   }
 
-  async addTransaction(transaction: Omit<Transaction, 'id' | 'card' | 'user_id' | 'profiles'>): Promise<Transaction | null> {
+  async addTransaction(transaction: Partial<Transaction>): Promise<Transaction | null> {
     const { data, error } = await this.supabase.from('transactions').insert([transaction]).select();
      if (error) {
       console.error('Erro ao adicionar transação:', error.message);
@@ -83,6 +83,15 @@ export class SupabaseService {
       throw error;
     }
     return data || [];
+  }
+
+  async addBudget(budget: Omit<Budget, 'id' | 'spent_amount'>): Promise<Budget | null> {
+    const { data, error } = await this.supabase.from('budgets').insert([budget]).select();
+    if (error) {
+      console.error('Erro ao adicionar orçamento:', error.message);
+      throw error;
+    }
+    return data ? data[0] : null;
   }
 
   // --- Métodos para Conexões ---

@@ -27,11 +27,18 @@ export class ExpenseService {
   connections = signal<Connection[]>([]);
   
   // --- Sinais Computados ---
-  transactionsWithCardDetails = computed(() => {
+  transactionsWithDetails = computed(() => {
+    // Antonio Batista - Organizador de gastos - 2024-07-25
+    // Mapeia cartões e orçamentos para fácil acesso.
     const cardsMap = new Map(this.cards().map(c => [c.id, c]));
+    const budgetsMap = new Map(this.budgets().map(b => [b.id, b]));
+    
+    // Antonio Batista - Organizador de gastos - 2024-07-25
+    // Adiciona os detalhes do cartão ou do orçamento a cada transação.
     return this.transactions().map(t => ({
       ...t,
-      card: cardsMap.get(t.card_id)
+      card: t.card_id ? cardsMap.get(t.card_id) : undefined,
+      budget: t.budget_id ? budgetsMap.get(t.budget_id) : undefined
     })).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   });
 
@@ -77,12 +84,17 @@ export class ExpenseService {
 
   // --- Métodos de Ação ---
 
-  async addTransaction(transactionData: Omit<Transaction, 'id' | 'card' | 'user_id' | 'profiles'>): Promise<void> {
+  async addTransaction(transactionData: Partial<Transaction>): Promise<void> {
     // Antonio Batista - Organizador de gastos - 2024-07-25
     // Adiciona uma nova transação via Supabase e atualiza o estado local.
     await this.supabaseService.addTransaction(transactionData);
-    const updatedTransactions = await this.supabaseService.getTransactions();
+    // Recarrega transações e orçamentos, pois o trigger do DB pode ter atualizado um orçamento.
+    const [updatedTransactions, updatedBudgets] = await Promise.all([
+      this.supabaseService.getTransactions(),
+      this.supabaseService.getBudgets()
+    ]);
     this.transactions.set(updatedTransactions);
+    this.budgets.set(updatedBudgets);
   }
 
   async addCard(cardData: Omit<Card, 'id'>): Promise<void> {
@@ -91,6 +103,14 @@ export class ExpenseService {
     await this.supabaseService.addCard(cardData);
     const updatedCards = await this.supabaseService.getCards();
     this.cards.set(updatedCards);
+  }
+
+  async addBudget(budgetData: Omit<Budget, 'id' | 'spent_amount'>): Promise<void> {
+    // Antonio Batista - Organizador de gastos - 2024-07-25
+    // Adiciona um novo orçamento (saldo) via Supabase e atualiza o estado local.
+    await this.supabaseService.addBudget(budgetData);
+    const updatedBudgets = await this.supabaseService.getBudgets();
+    this.budgets.set(updatedBudgets);
   }
 
   async sendConnectionInvite(email: string): Promise<string> {
