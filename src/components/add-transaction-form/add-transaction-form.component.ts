@@ -26,6 +26,11 @@ export class AddTransactionFormComponent {
   budgets = this.expenseService.budgets;
   isSubmitting = signal(false);
 
+  categories = [
+    'Alimentação', 'Transporte', 'Moradia', 'Lazer', 'Saúde', 
+    'Compras', 'Serviços', 'Educação', 'Viagem', 'Outros'
+  ];
+
   // Antonio Batista - Organizador de gastos - 2024-07-25
   // Definição do formulário reativo com validações.
   transactionForm = this.fb.group({
@@ -33,6 +38,7 @@ export class AddTransactionFormComponent {
     place: ['', Validators.required],
     amount: [null as number | null, [Validators.required, Validators.min(0.01)]],
     date: [new Date().toISOString().substring(0, 10), Validators.required],
+    category: ['', Validators.required],
     paymentMethod: ['', Validators.required], // Unifica cartão e saldo
   });
 
@@ -50,8 +56,6 @@ export class AddTransactionFormComponent {
 
       // Antonio Batista - Organizador de gastos - 2024-07-25
       // CORREÇÃO: Divide a string do método de pagamento e reconstrói o UUID corretamente.
-      // O UUID contém hifens, então `split('-')` o quebra. Precisamos pegar a primeira parte
-      // como o tipo e juntar o resto para formar o ID completo.
       const paymentMethodParts = formValue.paymentMethod!.split('-');
       const type = paymentMethodParts[0];
       const id = paymentMethodParts.slice(1).join('-');
@@ -61,6 +65,7 @@ export class AddTransactionFormComponent {
           place: formValue.place,
           amount: formValue.amount,
           date: formValue.date,
+          category: formValue.category,
           card_id: type === 'card' ? id : null,
           budget_id: type === 'budget' ? id : null,
           type: type === 'card' ? 'credit' : 'debit'
@@ -73,7 +78,6 @@ export class AddTransactionFormComponent {
       });
     } catch (error) {
         console.error("Erro ao adicionar transação:", error);
-        // Opcional: Adicionar feedback de erro para o usuário
     } finally {
         this.isSubmitting.set(false);
     }

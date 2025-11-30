@@ -21,51 +21,87 @@
   }
   @case ('loaded') {
     <div class="space-y-8">
-      <!-- Seção de Resumo -->
-      <section>
-        <h1 class="text-2xl font-bold text-gray-800 mb-4">Dashboard Mensal</h1>
-        <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-secondary">
-          <h2 class="text-lg font-semibold text-gray-600">Total de Gastos em Julho</h2>
-          <p class="text-4xl font-bold text-gray-900 mt-2">
-            {{ totalSpentThisMonth() | currency:'BRL':'symbol':'1.2-2' }}
+      <h1 class="text-3xl font-bold text-gray-800">Dashboard Mensal</h1>
+      
+      <!-- Seção de Métricas (KPIs) -->
+      <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="bg-white rounded-lg shadow-lg p-5 border-l-4 border-primary">
+          <h2 class="text-sm font-semibold text-gray-500">Total de Gastos (Mês)</h2>
+          <p class="text-3xl font-bold text-gray-900 mt-1">
+            {{ totalSpentThisMonth() | currency:'BRL' }}
+          </p>
+        </div>
+         <div class="bg-white rounded-lg shadow-lg p-5 border-l-4 border-yellow-500">
+          <h2 class="text-sm font-semibold text-gray-500">Média Diária</h2>
+          <p class="text-3xl font-bold text-gray-900 mt-1">
+            {{ averageDailySpending() | currency:'BRL' }}
+          </p>
+        </div>
+        <div class="bg-white rounded-lg shadow-lg p-5 border-l-4 border-red-500">
+          <h2 class="text-sm font-semibold text-gray-500">Maior Compra</h2>
+          <p class="text-3xl font-bold text-gray-900 mt-1">
+             {{ (highestTransactionThisMonth()?.amount || 0) | currency:'BRL' }}
+          </p>
+           @if(highestTransactionThisMonth(); as highest) {
+             <p class="text-xs text-gray-500 truncate">{{highest.title}}</p>
+           }
+        </div>
+        <div class="bg-white rounded-lg shadow-lg p-5 border-l-4 border-blue-500">
+          <h2 class="text-sm font-semibold text-gray-500">Total de Transações</h2>
+          <p class="text-3xl font-bold text-gray-900 mt-1">
+            {{ transactionsThisMonth().length }}
           </p>
         </div>
       </section>
 
-      <!-- Seção de Saldos Disponíveis (Orçamentos) -->
-      <section>
-        <h2 class="text-xl font-bold text-gray-800 mb-4">Saldos Disponíveis</h2>
-        @if(budgets().length > 0) {
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            @for (budget of budgets(); track budget.id) {
-              @let remaining = budget.total_amount - budget.spent_amount;
-              @let percentage = (budget.spent_amount / (budget.total_amount > 0 ? budget.total_amount : 1)) * 100;
-              <div class="bg-white rounded-lg shadow p-5">
-                <div class="flex justify-between items-start">
-                  <div>
-                    <h3 class="font-semibold text-gray-700">{{ budget.name }}</h3>
-                    <p class="text-2xl font-bold text-primary">{{ remaining | currency:'BRL' }}</p>
-                    <p class="text-sm text-gray-500">
-                      Restante de {{ budget.total_amount | currency:'BRL' }}
-                    </p>
-                  </div>
-                  <div class="text-sm font-semibold" [class.text-green-600]="remaining > 0" [class.text-red-600]="remaining <= 0">
-                    {{ remaining > 0 ? 'Disponível' : 'Excedido' }}
-                  </div>
+      <!-- Seção Principal com Gráfico e Saldos -->
+      <section class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Gráfico de Categorias -->
+        <div class="lg:col-span-2 bg-white rounded-lg shadow-lg p-6">
+          @if(transactionsThisMonth().length > 0) {
+            <div class="h-96 relative">
+              <canvas #categoryChart></canvas>
+            </div>
+          } @else {
+            <div class="h-96 flex flex-col justify-center items-center text-center text-gray-500">
+               <svg class="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path></svg>
+              <h3 class="text-lg font-semibold">Sem dados de gastos este mês</h3>
+              <p class="text-sm">O gráfico será exibido aqui quando você registrar transações.</p>
+            </div>
+          }
+        </div>
+        
+        <!-- Saldos Disponíveis -->
+        <div class="lg:col-span-1 space-y-4">
+           <h2 class="text-xl font-bold text-gray-800">Saldos Disponíveis</h2>
+            @if(budgets().length > 0) {
+                @for (budget of budgets(); track budget.id) {
+                @let remaining = budget.total_amount - budget.spent_amount;
+                @let percentage = (budget.spent_amount / (budget.total_amount > 0 ? budget.total_amount : 1)) * 100;
+                <div class="bg-white rounded-lg shadow p-4">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-semibold text-gray-700">{{ budget.name }}</h3>
+                        <p class="text-sm font-semibold" [class.text-green-600]="remaining >= 0" [class.text-red-600]="remaining < 0">
+                            {{ remaining >= 0 ? 'Disponível' : 'Excedido' }}
+                        </p>
+                    </div>
+                    <div class="flex justify-between items-center mt-1">
+                         <p class="text-xl font-bold text-primary">{{ remaining | currency:'BRL' }}</p>
+                         <p class="text-xs text-gray-500">de {{ budget.total_amount | currency:'BRL' }}</p>
+                    </div>
+                    <div class="mt-2">
+                        <div class="bg-gray-200 rounded-full h-2.5">
+                            <div class="bg-primary h-2.5 rounded-full" [style.width.%]="percentage"></div>
+                        </div>
+                    </div>
                 </div>
-                <div class="mt-4">
-                  <div class="bg-gray-200 rounded-full h-2.5">
-                    <div class="bg-primary h-2.5 rounded-full" [style.width.%]="percentage"></div>
-                  </div>
+                }
+            } @else {
+                <div class="bg-white rounded-lg shadow p-8 text-center text-gray-500 h-full flex items-center justify-center">
+                    <p>Nenhum saldo cadastrado.</p>
                 </div>
-              </div>
             }
-          </div>
-        } @else {
-          <div class="bg-white rounded-lg shadow p-8 text-center text-gray-500">
-             <p>Nenhum saldo cadastrado ainda.</p>
-          </div>
-        }
+        </div>
       </section>
 
       <!-- Seção de Transações Recentes -->
@@ -73,7 +109,7 @@
         <h2 class="text-xl font-bold text-gray-800 mb-4">Transações Recentes</h2>
         <div class="bg-white rounded-lg shadow overflow-hidden">
           <ul class="divide-y divide-gray-200">
-            @for (transaction of transactions(); track transaction.id) {
+            @for (transaction of transactions() | slice:0:10; track transaction.id) {
               <li class="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
                 <div class="flex items-center">
                   <div class="p-3 rounded-full mr-4" [class.bg-blue-100]="transaction.type === 'credit'" [class.bg-green-100]="transaction.type === 'debit'">
@@ -88,7 +124,8 @@
                   <div>
                     <p class="font-semibold text-gray-900">{{ transaction.title }}</p>
                     <p class="text-sm text-gray-500">
-                      {{ transaction.place }} &middot; {{ transaction.card?.name || transaction.budget?.name }}
+                      {{ transaction.place }} &middot; 
+                      <span class="font-medium">{{ transaction.card?.name || transaction.budget?.name }}</span>
                       @if(transaction.user_id !== currentUser()?.id) {
                         <span class="font-semibold text-primary-700"> ({{ transaction.profiles?.email }})</span>
                       }

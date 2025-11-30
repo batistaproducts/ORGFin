@@ -10,6 +10,7 @@ export interface Transaction {
   title: string;
   place: string;
   amount: number;
+  category: string;
   card_id: string | null;
   card?: Card; // Opcional, para incluir detalhes do cartão
   budget_id: string | null;
